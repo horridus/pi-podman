@@ -1,0 +1,30 @@
+services:
+  pi:
+    build:
+      context: .
+      dockerfile: Containerfile
+    container_name: pi
+    environment:
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-}
+      - LLAMACPP_BASE_URL=${LLAMACPP_BASE_URL:-}
+      - LLAMACPP_MODEL=${LLAMACPP_MODEL:-}
+    volumes:
+      # Monta SOLO la cartella specificata in .env
+      - ${WORKSPACE_PATH}:/workspace:Z
+      # Persiste la configurazione di pi tra le sessioni
+      - ${PI_CONFIG_PATH:-~/.pi}:/root/.pi:Z
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    # Accesso a internet abilitato tramite rete bridge (default podman-compose)
+    # Il container condivide il DNS dell'host e ha accesso alla rete esterna
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp
+      - /root/.npm

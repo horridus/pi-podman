@@ -1,0 +1,11 @@
+# File env con dati locali
+.env
+
+# Artefatti Podman/Docker
+*.log
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
