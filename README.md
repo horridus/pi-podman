@@ -1,6 +1,6 @@
-# pi in Podman + Ollama
+# pi in Podman + Ollama / llama.cpp
 
-Esegui [pi](https://pi.dev/) in un container Podman isolato, usando un server **Ollama** locale come backend LLM.
+Esegui [pi](https://pi.dev/) in un container Podman isolato, usando un server **Ollama** o **llama.cpp** locale come backend LLM.
 
 ```
 ┌─────────────────────────────────────────┐
@@ -14,15 +14,15 @@ Esegui [pi](https://pi.dev/) in un container Podman isolato, usando un server **
 └─────────┼───────────────────────────────┘
           │
           ▼
- 192.168.0.188:11434
- (Ollama su rete locale)
+ 192.168.0.188:11434  (Ollama)
+ 192.168.0.188:8080   (llama.cpp)
 ```
 
 ## Requisiti
 
 - Podman
 - podman-compose (`pip install podman-compose`)
-- Un server Ollama raggiungibile su `192.168.0.188:11434`
+- Un server **Ollama** raggiungibile (es. `192.168.0.188:11434`) **oppure** un server **llama.cpp** (`llama-server`) raggiungibile (es. `192.168.0.188:8080`)
 
 ## Setup
 
@@ -33,7 +33,7 @@ cd pi-podman
 
 # 2. Crea il file .env con il percorso della tua cartella di lavoro
 cp env.example .env
-nano .env   # imposta WORKSPACE_PATH, OLLAMA_BASE_URL, OLLAMA_MODEL e, opzionalmente, PI_CONFIG_PATH
+nano .env   # imposta WORKSPACE_PATH, il backend LLM (Ollama o llama.cpp) e, opzionalmente, PI_CONFIG_PATH
 
 # 3. Rendi eseguibile lo script
 chmod +x run.sh
@@ -54,7 +54,7 @@ chmod +x run.sh
 
 ## Configurazione modelli
 
-Configura il modello direttamente in `.env`:
+### Ollama
 
 ```bash
 # Seleziona endpoint e modello Ollama
@@ -73,9 +73,21 @@ Modelli consigliati per il coding:
 | `deepseek-coder-v2:16b` | ~9GB | Ottimo compromesso |
 | `codellama:13b` | ~8GB | Classico |
 
-## Come funziona la configurazione Ollama
+### llama.cpp
 
-All'avvio del container, lo script `entrypoint.sh` genera automaticamente il file `~/.pi/agent/models.json` a partire dalle variabili `OLLAMA_BASE_URL` e `OLLAMA_MODEL` definite in `.env`. Questo file configura Ollama come provider personalizzato per pi.
+```bash
+# Seleziona endpoint llama.cpp (commenta le righe Ollama nel .env)
+LLAMACPP_BASE_URL=http://192.168.0.188:8080
+LLAMACPP_MODEL=qwen2.5-coder   # nome libero, usato solo internamente da pi
+```
+
+llama.cpp (`llama-server`) espone un'API compatibile OpenAI su `/v1`. Carica un solo modello per volta, quindi `LLAMACPP_MODEL` è un nome descrittivo arbitrario.
+
+I due provider sono mutuamente esclusivi in `run.sh`: se entrambi sono impostati, Ollama ha la precedenza.
+
+## Come funziona la configurazione provider
+
+All'avvio del container, lo script `entrypoint.sh` genera automaticamente il file `~/.pi/agent/models.json` a partire dalle variabili definite in `.env`. Questo file configura Ollama e/o llama.cpp come provider personalizzati per pi.
 
 ## Persistenza configurazione pi
 
@@ -90,6 +102,6 @@ PI_CONFIG_PATH=~/.pi
 ## Sicurezza
 
 - Il container accede **solo** alla cartella specificata in `WORKSPACE_PATH`
-- pi si connette direttamente a `OLLAMA_BASE_URL`
+- pi si connette direttamente a `OLLAMA_BASE_URL` o `LLAMACPP_BASE_URL`
 - Telemetry di pi disabilitata di default all'interno del container
 - Flag `no-new-privileges` attivo sul container

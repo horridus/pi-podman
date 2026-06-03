@@ -33,9 +33,12 @@ echo "🤖 Avvio pi..."
 if [[ "$#" -gt 0 ]]; then
   podman-compose run --rm pi "$@"
 else
-  if [[ -z "${OLLAMA_MODEL:-}" ]]; then
-    echo "❌ Errore: OLLAMA_MODEL non impostata in .env."
+  if [[ -n "${OLLAMA_MODEL:-}" ]]; then
+    podman-compose run --rm pi --provider ollama --model "${OLLAMA_MODEL}"
+  elif [[ -n "${LLAMACPP_BASE_URL:-}" ]]; then
+    podman-compose run --rm pi --provider llamacpp --model "${LLAMACPP_MODEL:-llamacpp}"
+  else
+    echo "❌ Errore: nessun provider configurato in .env (imposta OLLAMA_MODEL o LLAMACPP_BASE_URL)."
     exit 1
   fi
-  podman-compose run --rm pi --provider ollama --model "${OLLAMA_MODEL}"
 fi
