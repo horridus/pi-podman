@@ -5,13 +5,9 @@ services:
       dockerfile: Containerfile
     container_name: pi
     environment:
-      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-}
-      - OLLAMA_MODEL=${OLLAMA_MODEL:-}
-      - LLAMACPP_BASE_URL=${LLAMACPP_BASE_URL:-}
-      - LLAMACPP_MODEL=${LLAMACPP_MODEL:-}
     volumes:
       # Monta SOLO la cartella specificata in .env
-      - ${WORKSPACE_PATH}:/workspace:Z
+      - ${PIPODMAN_WORKSPACE_PATH}:/workspace:Z
       # Persiste la configurazione di pi tra le sessioni
       - ${PI_CONFIG_PATH:-~/.pi}:/root/.pi:Z
     working_dir: /workspace

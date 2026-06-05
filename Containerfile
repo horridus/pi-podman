@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     procps \
     iputils-ping \
     dnsutils \
+    python3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Installa pi coding agent globalmente
