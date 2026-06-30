@@ -33,6 +33,24 @@ else
   exit 1
 fi
 
+wait_for_mariadb() {
+  local status=""
+
+  for _ in $(seq 1 30); do
+    status="$(podman inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}starting{{end}}' pi-mariadb 2>/dev/null || true)"
+
+    if [[ "$status" == "healthy" ]]; then
+      return 0
+    fi
+
+    sleep 2
+  done
+
+  echo "❌ Errore: MariaDB non è diventato healthy in tempo utile."
+  podman logs pi-mariadb | tail -n 50 || true
+  return 1
+}
+
 # Se il primo argomento è una directory, usalo come workspace override
 if [[ -n "${1:-}" ]]; then
   PIPODMAN_WORKSPACE_PATH="$(realpath "$1")"
@@ -60,6 +78,7 @@ compose build pi
 # Avvia/aggiorna MariaDB in background con volume persistente
 echo "🗄️ Avvio MariaDB..."
 compose up -d mariadb
+wait_for_mariadb
 
 # Avvia pi in modo interattivo
 echo "🤖 Avvio pi..."

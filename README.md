@@ -160,7 +160,7 @@ MariaDB usa inoltre un volume nominato dedicato montato su `/var/lib/mysql`, qui
 
 ### MariaDB inclusa nel setup
 
-- `./run.sh` avvia automaticamente il servizio `mariadb` in background prima di eseguire `pi`
+- `./run.sh` avvia automaticamente il servizio `mariadb` in background e attende che l'healthcheck sia `healthy` prima di eseguire `pi`
 - Dal container `pi` il database è raggiungibile all'host `mariadb` sulla porta `3306`
 - Il client `mariadb` è installato nel container `pi`, quindi puoi verificare la connessione direttamente da lì
 
