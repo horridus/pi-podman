@@ -54,8 +54,10 @@ services:
     restart: unless-stopped
     healthcheck:
       test:
-        - CMD-SHELL
-        - mariadb-admin ping -h 127.0.0.1 -uroot -p$$MARIADB_ROOT_PASSWORD --silent
+        - CMD
+        - healthcheck.sh
+        - --connect
+        - --innodb_initialized
       interval: 10s
       timeout: 5s
       retries: 5
