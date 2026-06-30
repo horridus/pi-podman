@@ -25,7 +25,8 @@ services:
       # Persiste le estensioni personalizzate tra le sessioni
       - ${PI_CUSTOM_EXTENSIONS_PATH:-~/.pi/custom_extensions}:/root/.pi/custom_extensions:Z
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_healthy
     working_dir: /workspace
     stdin_open: true
     tty: true
@@ -51,5 +52,13 @@ services:
     volumes:
       - mariadb-data:/var/lib/mysql:Z
     restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mariadb-admin ping -h 127.0.0.1 -uroot -p$$MARIADB_ROOT_PASSWORD --silent
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     expose:
       - "3306"
