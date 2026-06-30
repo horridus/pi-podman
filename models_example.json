@@ -1,0 +1,69 @@
+{
+  "providers": {
+    "llamacpp": {
+      "baseUrl": "http://192.168.0.188:8080/v1",
+      "api": "openai-completions",
+      "apiKey": "no-key",
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsReasoningEffort": false
+      },
+      "models": [
+        {
+          "id": "qwen35-9b-flash-q4km",
+          "input": ["text", "image"],
+          "contextWindow": 128000,
+          "reasoning": true
+        },
+        {
+          "id": "qwen35-9b-flash-q4km-32Kctx",
+          "input": ["text", "image"],
+          "contextWindow": 32000,
+          "reasoning": true
+        },
+        {
+          "id": "qwen35-9b-flash-q5km",
+          "input": ["text", "image"],
+          "contextWindow": 128000,
+          "reasoning": true
+        },
+        {
+          "id": "qwen35-9b-flash-q5km-32Kctx",
+          "input": ["text", "image"],
+          "contextWindow": 32000,
+          "reasoning": true
+        },
+        {
+          "id": "qwen35-9b-q5km",
+          "input": ["text", "image"],
+          "contextWindow": 128000,
+          "reasoning": true
+        },
+        {
+          "id": "qwen35-9b-q5km-32Kctx",
+          "input": ["text", "image"],
+          "contextWindow": 32000,
+          "reasoning": true
+        }
+      ]
+    },
+    "ollama": {
+      "baseUrl": "http://192.168.0.188:11434/v1",
+      "api": "openai-completions",
+      "apiKey": "no-key",
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsReasoningEffort": false
+      },
+      "models": [
+        {
+          "id": "qwen3.5",
+          "input": ["text", "image"],
+          "contextWindow": 128000,
+          "reasoning": true
+        }
+      ]
+    }
+  }
+
+}

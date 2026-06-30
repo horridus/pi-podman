@@ -7,6 +7,12 @@ RUN apt-get update && apt-get install -y \
     iputils-ping \
     dnsutils \
     python3 \
+    python3-pip \
+    poppler-utils \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+    tesseract-ocr-ita \
+    python3-dotenv \
     && rm -rf /var/lib/apt/lists/*
 
 # Installa pi coding agent globalmente

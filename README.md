@@ -1,6 +1,6 @@
-# pi in Podman + Ollama / llama.cpp
+# pi in Podman con Ollama / llama.cpp
 
-Esegui [pi](https://pi.dev/) in un container Podman isolato, usando un server **Ollama** o **llama.cpp** locale come backend LLM.
+Esegui **[pi](https://pi.dev/)**, l'agente di coding AI di GitHub, in un container **Podman** isolato, utilizzando un server **Ollama** o **llama.cpp** locale come backend per i modelli linguistici.
 
 ```
 ┌─────────────────────────────────────────┐
@@ -14,17 +14,21 @@ Esegui [pi](https://pi.dev/) in un container Podman isolato, usando un server **
 └─────────┼───────────────────────────────┘
           │
           ▼
- 192.168.0.188:11434  (Ollama)
- 192.168.0.188:8080   (llama.cpp)
+  192.168.0.188:11434  (Ollama)
+  192.168.0.188:8080   (llama.cpp)
 ```
 
-## Requisiti
+---
 
-- Podman
-- podman-compose (`pip install podman-compose`)
-- Un server **Ollama** raggiungibile (es. `192.168.0.188:11434`) **oppure** un server **llama.cpp** (`llama-server`) raggiungibile (es. `192.168.0.188:8080`)
+## 🚀 Requisiti
 
-## Setup
+- **Podman** ([download](https://podman.io/docs/installation))
+- **podman-compose** (`pip install podman-compose`)
+- Un server **Ollama** raggiungibile (es. `192.168.0.188:11434`) **oppure** un server **llama.cpp** (`llama-server`) raggiungibile (es. `192.168.0.188:8080)`
+
+---
+
+## 📦 Setup Iniziale
 
 ```bash
 # 1. Clona il repository
@@ -33,75 +37,205 @@ cd pi-podman
 
 # 2. Crea il file .env con il percorso della tua cartella di lavoro
 cp env.example .env
-nano .env   # imposta WORKSPACE_PATH, il backend LLM (Ollama o llama.cpp) e, opzionalmente, PI_CONFIG_PATH
+nano .env   # imposta PIPODMAN_WORKSPACE_PATH e il backend LLM (Ollama o llama.cpp)
 
 # 3. Rendi eseguibile lo script
 chmod +x run.sh
 ```
 
-## Utilizzo
+---
 
+## ▶️ Avvio
+
+### Metodo 1: Usa il percorso definito in `.env`
 ```bash
-# Usa il percorso definito in .env
 ./run.sh
-
-# Oppure passa il percorso direttamente
-./run.sh /home/tuoutente/progetti/mio-progetto
-
-# Oppure passa argomenti direttamente a pi (es. provider e modello)
-./run.sh --provider ollama --model qwen2.5-coder:32b
 ```
 
-## Configurazione modelli
+### Metodo 2: Passa il percorso direttamente
+```bash
+./run.sh /home/tuoutente/progetti/mio-progetto
+```
 
-### Ollama
+### Metodo 3: Passa argomenti direttamente a pi
+```bash
+./run.sh --provider ollama --model qwen3.5
+```
+
+---
+
+## ⚙️ Configurazione
+
+### 📄 File `.env`
 
 ```bash
-# Seleziona endpoint e modello Ollama
-OLLAMA_BASE_URL=http://192.168.0.188:11434
-OLLAMA_MODEL=qwen2.5-coder:32b
+# 📁 Percorso assoluto della cartella workspace
+PIPODMAN_WORKSPACE_PATH=/home/tuoutente/workspace
 
+# 🛠️ Percorso di configurazione di pi (opzionale, default: ~/.pi)
+# PI_CONFIG_PATH=/home/tuoutente/.pi
+
+---
+
+### 🔌 Configurazione Modelli Ollama
+
+```bash
 # Elenca i modelli disponibili sul tuo server Ollama
 curl http://192.168.0.188:11434/api/tags
 ```
 
-Modelli consigliati per il coding:
+**Modelli consigliati per il coding**:
+
 | Modello | Dimensione | Note |
 |---|---|---|
-| `qwen2.5-coder:32b` | ~20GB | Migliore qualità |
+| `qwen3.5` | ~4-20GB* | Migliore qualità, 128K context |
+| `qwen2.5-coder:32b` | ~20GB | Alternativa, ottima qualità |
 | `qwen2.5-coder:7b` | ~4GB | Veloce, leggero |
 | `deepseek-coder-v2:16b` | ~9GB | Ottimo compromesso |
 | `codellama:13b` | ~8GB | Classico |
 
-### llama.cpp
+> *La dimensione dipende dalla quantizzazione (q4, q5, q8)
 
-```bash
-# Seleziona endpoint llama.cpp (commenta le righe Ollama nel .env)
-LLAMACPP_BASE_URL=http://192.168.0.188:8080
-LLAMACPP_MODEL=qwen2.5-coder   # nome libero, usato solo internamente da pi
+---
+
+
+## 📂 Struttura models.json
+
+```json
+{
+  "providers": {
+    "llamacpp": {
+      "baseUrl": "http://192.168.0.188:8080/v1",
+      "api": "openai-completions",
+      "apiKey": "no-key",
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsReasoningEffort": false
+      },
+      "models": [
+        {
+          "id": "qwen35-9b-flash-q4km",
+          "input": ["text", "image"],
+          "contextWindow": 128000,
+          "reasoning": true
+        }
+      ]
+    },
+    "ollama": {
+      "baseUrl": "http://192.168.0.188:11434/v1",
+      "api": "openai-completions",
+      "apiKey": "no-key",
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsReasoningEffort": false
+      },
+      "models": [
+        {
+          "id": "qwen3.5",
+          "input": ["text", "image"],
+          "contextWindow": 128000,
+          "reasoning": true
+        }
+      ]
+    }
+  }
+}
 ```
 
-llama.cpp (`llama-server`) espone un'API compatibile OpenAI su `/v1`. Carica un solo modello per volta, quindi `LLAMACPP_MODEL` è un nome descrittivo arbitrario.
+---
 
-I due provider sono mutuamente esclusivi in `run.sh`: se entrambi sono impostati, Ollama ha la precedenza.
+## 💾 Persistenza
 
-## Come funziona la configurazione provider
+La configurazione di **pi** viene montata dall'host nel container su `/root/.pi`, così credenziali, preferenze e cronologia persistono tra una sessione e l'altra.
 
-All'avvio del container, lo script `entrypoint.sh` genera automaticamente il file `~/.pi/agent/models.json` a partire dalle variabili definite in `.env`. Questo file configura Ollama e/o llama.cpp come provider personalizzati per pi.
+### Cambiare percorso di configurazione
 
-## Persistenza configurazione pi
-
-La configurazione di pi viene montata dall'host nel container su `/root/.pi`, così credenziali, preferenze e cronologia persistono tra una sessione e l'altra.
-
-Per default viene usato `~/.pi` sull'host. Se vuoi usare un percorso diverso, imposta `PI_CONFIG_PATH` nel file `.env`:
+Per default viene usato `~/.pi` sull'host. Se vuoi usare un percorso diverso:
 
 ```bash
-PI_CONFIG_PATH=~/.pi
+PI_CONFIG_PATH=/home/tuoutente/.pi
 ```
 
-## Sicurezza
+---
 
-- Il container accede **solo** alla cartella specificata in `WORKSPACE_PATH`
-- pi si connette direttamente a `OLLAMA_BASE_URL` o `LLAMACPP_BASE_URL`
-- Telemetry di pi disabilitata di default all'interno del container
-- Flag `no-new-privileges` attivo sul container
+## 🔒 Sicurezza
+
+- ✅ Il container accede **solo** alla cartella specificata in `PIPODMAN_WORKSPACE_PATH`
+- ✅ **pi** si connette direttamente a `OLLAMA_BASE_URL` o `LLAMACPP_BASE_URL`
+- ✅ Telemetry di **pi** disabilitata di default all'interno del container
+- ✅ Flag `no-new-privileges` attivo sul container
+- ✅ Accesso a internet abilitato tramite rete bridge (condivisione DNS dell'host)
+
+---
+
+## 📝 Variabili di Ambiente
+
+| Variabile | Descrizione | Default | Necessaria |
+|-----------|-------------|---------|----------|
+| `PIPODMAN_WORKSPACE_PATH` | Percorso assoluto della cartella workspace | N/A | **Sì** |
+| `PI_CONFIG_PATH` | Percorso configurazione pi | `~/.pi` | No |
+
+---
+
+## 🛠️ Comandi Utili
+
+### Verifica che i servizi LLM siano attivi
+
+**Ollama**:
+```bash
+curl http://192.168.0.188:11434/api/tags
+curl http://192.168.0.188:11434/api/generate -d '{"model": "qwen3.5", "prompt": "hello"}'
+```
+
+**llama.cpp**:
+```bash
+curl http://192.168.0.188:8080/v1/models
+curl http://192.168.0.188:8080/v1/chat/completions -H "Content-Type: application/json" -d '{
+  "model": "qwen35-9b-flash-q4km",
+  "messages": [{"role": "user", "content": "hello"}]
+}'
+```
+
+### Gestione container
+
+```bash
+# Elenco container
+podman ps
+
+# Ferma il container
+terminal -x pi
+
+# Rimuovi container (non distrugge i dati)
+podman stop pi && podman rm pi
+
+# Rebuild immagine
+podman-compose --env-file .env build pi
+```
+
+---
+
+## 🐛 Troubleshooting
+
+**"Errore: la cartella 'X' non esiste"**
+- Verifica che `PIPODMAN_WORKSPACE_PATH` punti a un percorso assoluto esistente
+
+**"Connection refused" su Ollama**
+- Controlla che il servizio Ollama sia attivo: `curl http://192.168.0.188:11434`
+- Verifica che la porta 11434 non sia bloccata dal firewall
+
+**"Connection refused" su llama.cpp**
+- Assicurati che `llama-server` sia in esecuzione
+- Controlla che la porta 8080 sia accessibile
+
+**I modelli non appaiono in models.json**
+- Esegui `podman-compose --env-file .env build pi` per forzare la rigenerazione
+
+---
+
+## 📄 Licenza
+
+Questo progetto è open source. Consulta il repository per i dettagli della licenza.
+
+---
+
+**Sviluppato con ❤️ per la community AI e Open Source**
