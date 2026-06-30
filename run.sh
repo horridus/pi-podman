@@ -20,6 +20,11 @@ for required_env_var in "${required_env_vars[@]}"; do
   fi
 done
 
+if [[ "$MARIADB_PASSWORD" == "REPLACE_WITH_SECURE_USER_PASSWORD" || "$MARIADB_ROOT_PASSWORD" == "REPLACE_WITH_SECURE_ROOT_PASSWORD" ]]; then
+  echo "❌ Errore: sostituisci le password placeholder di MariaDB nel file .env con valori casuali sicuri."
+  exit 1
+fi
+
 if command -v podman-compose >/dev/null 2>&1; then
   compose() {
     podman-compose --env-file .env -f podman-compose.yml "$@"
@@ -35,6 +40,11 @@ fi
 
 wait_for_mariadb() {
   local status=""
+
+  if ! podman container exists pi-mariadb 2>/dev/null; then
+    echo "❌ Errore: il container MariaDB non è stato creato correttamente."
+    return 1
+  fi
 
   for _ in $(seq 1 30); do
     status="$(podman inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}starting{{end}}' pi-mariadb 2>/dev/null || true)"

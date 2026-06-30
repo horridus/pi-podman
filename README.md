@@ -167,7 +167,7 @@ MariaDB usa inoltre un volume nominato dedicato montato su `/var/lib/mysql`, qui
 Esempio di connessione dal container `pi`:
 
 ```bash
-mariadb -h mariadb -u "$MARIADB_USER" -p"$MARIADB_PASSWORD" "$MARIADB_DATABASE"
+mariadb -h mariadb -u "$MARIADB_USER" -p "$MARIADB_DATABASE"
 ```
 
 ### Cambiare percorso di configurazione
