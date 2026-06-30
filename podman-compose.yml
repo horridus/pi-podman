@@ -41,7 +41,7 @@ services:
       - /tmp
       - /root/.npm
   mariadb:
-    image: mariadb:11
+    image: docker.io/library/mariadb:11
     container_name: pi-mariadb
     environment:
       MARIADB_DATABASE: ${MARIADB_DATABASE}

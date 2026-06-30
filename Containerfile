@@ -16,6 +16,9 @@ RUN apt-get update && apt-get install -y \
     python3-dotenv \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Astral CLI
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+
 # Installa pi coding agent globalmente
 RUN npm install -g @earendil-works/pi-coding-agent
 
