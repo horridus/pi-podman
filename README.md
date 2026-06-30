@@ -78,8 +78,8 @@ PIPODMAN_WORKSPACE_PATH=/home/tuoutente/workspace
 # 🗄️ Configurazione MariaDB
 MARIADB_DATABASE=pi
 MARIADB_USER=pi
-MARIADB_PASSWORD=CHANGE_ME_GENERATE_RANDOM_USER_PASSWORD
-MARIADB_ROOT_PASSWORD=CHANGE_ME_GENERATE_RANDOM_ROOT_PASSWORD
+MARIADB_PASSWORD=REPLACE_WITH_SECURE_USER_PASSWORD
+MARIADB_ROOT_PASSWORD=REPLACE_WITH_SECURE_ROOT_PASSWORD
 ```
 
 > ⚠️ Genera password casuali uniche prima di avviare MariaDB, ad esempio con `openssl rand -base64 24`.
@@ -196,10 +196,10 @@ PI_CONFIG_PATH=/home/tuoutente/.pi
 |-----------|-------------|---------|----------|
 | `PIPODMAN_WORKSPACE_PATH` | Percorso assoluto della cartella workspace | N/A | **Sì** |
 | `PI_CONFIG_PATH` | Percorso configurazione pi | `~/.pi` | No |
-| `MARIADB_DATABASE` | Database creato automaticamente al primo avvio | `pi` | No |
-| `MARIADB_USER` | Utente applicativo MariaDB | `pi` | No |
-| `MARIADB_PASSWORD` | Password utente applicativo MariaDB | `CHANGE_ME_GENERATE_RANDOM_USER_PASSWORD` | No |
-| `MARIADB_ROOT_PASSWORD` | Password utente `root` MariaDB | `CHANGE_ME_GENERATE_RANDOM_ROOT_PASSWORD` | No |
+| `MARIADB_DATABASE` | Database creato automaticamente al primo avvio | `pi` | **Sì** |
+| `MARIADB_USER` | Utente applicativo MariaDB | `pi` | **Sì** |
+| `MARIADB_PASSWORD` | Password utente applicativo MariaDB | `REPLACE_WITH_SECURE_USER_PASSWORD` | **Sì** |
+| `MARIADB_ROOT_PASSWORD` | Password utente `root` MariaDB | `REPLACE_WITH_SECURE_ROOT_PASSWORD` | **Sì** |
 
 ---
 
