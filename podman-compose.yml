@@ -1,3 +1,6 @@
+volumes:
+  mariadb-data:
+
 networks:
   llm-network:
     external: true
@@ -9,6 +12,11 @@ services:
       dockerfile: Containerfile
     container_name: pi
     environment:
+      MARIADB_HOST: mariadb
+      MARIADB_PORT: 3306
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
     volumes:
       # Monta SOLO la cartella specificata in .env
       - ${PIPODMAN_WORKSPACE_PATH}:/workspace:Z
@@ -16,6 +24,8 @@ services:
       - ${PI_CONFIG_PATH:-~/.pi}:/root/.pi:Z
       # Persiste le estensioni personalizzate tra le sessioni
       - ${PI_CUSTOM_EXTENSIONS_PATH:-~/.pi/custom_extensions}:/root/.pi/custom_extensions:Z
+    depends_on:
+      - mariadb
     working_dir: /workspace
     stdin_open: true
     tty: true
@@ -30,3 +40,24 @@ services:
     tmpfs:
       - /tmp
       - /root/.npm
+  mariadb:
+    image: mariadb:11
+    container_name: pi-mariadb
+    environment:
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    volumes:
+      - mariadb-data:/var/lib/mysql:Z
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - healthcheck.sh
+        - --connect
+        - --innodb_initialized
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s

@@ -23,7 +23,7 @@ Esegui **[pi](https://pi.dev/)**, l'agente di coding AI di GitHub, in un contain
 ## 🚀 Requisiti
 
 - **Podman** ([download](https://podman.io/docs/installation))
-- **podman-compose** (`pip install podman-compose`)
+- **podman-compose** (`pip install podman-compose`) **oppure** `podman compose` (già incluso nelle versioni recenti di Podman)
 - Un server **Ollama** raggiungibile (es. `192.168.0.188:11434`) **oppure** un server **llama.cpp** (`llama-server`) raggiungibile (es. `192.168.0.188:8080)`
 
 ---
@@ -74,6 +74,15 @@ PIPODMAN_WORKSPACE_PATH=/home/tuoutente/workspace
 
 # 🛠️ Percorso di configurazione di pi (opzionale, default: ~/.pi)
 # PI_CONFIG_PATH=/home/tuoutente/.pi
+
+# 🗄️ Configurazione MariaDB
+MARIADB_DATABASE=pi
+MARIADB_USER=pi
+MARIADB_PASSWORD=REPLACE_WITH_SECURE_USER_PASSWORD
+MARIADB_ROOT_PASSWORD=REPLACE_WITH_SECURE_ROOT_PASSWORD
+```
+
+> ⚠️ Genera password casuali uniche prima di avviare MariaDB, ad esempio con `openssl rand -base64 24`.
 
 ---
 
@@ -147,6 +156,19 @@ curl http://192.168.0.188:11434/api/tags
 ## 💾 Persistenza
 
 La configurazione di **pi** viene montata dall'host nel container su `/root/.pi`, così credenziali, preferenze e cronologia persistono tra una sessione e l'altra.
+MariaDB usa inoltre un volume nominato dedicato montato su `/var/lib/mysql`, quindi i dati del database restano disponibili anche dopo `build`, `up --force-recreate` o ricreazione del container.
+
+### MariaDB inclusa nel setup
+
+- `./run.sh` avvia automaticamente il servizio `mariadb` in background e attende che l'healthcheck sia `healthy` prima di eseguire `pi`
+- Dal container `pi` il database è raggiungibile all'host `mariadb` sulla porta `3306`
+- Il client `mariadb` è installato nel container `pi`, quindi puoi verificare la connessione direttamente da lì
+
+Esempio di connessione dal container `pi`:
+
+```bash
+mariadb -h mariadb -u "$MARIADB_USER" -p "$MARIADB_DATABASE"
+```
 
 ### Cambiare percorso di configurazione
 
@@ -174,6 +196,10 @@ PI_CONFIG_PATH=/home/tuoutente/.pi
 |-----------|-------------|---------|----------|
 | `PIPODMAN_WORKSPACE_PATH` | Percorso assoluto della cartella workspace | N/A | **Sì** |
 | `PI_CONFIG_PATH` | Percorso configurazione pi | `~/.pi` | No |
+| `MARIADB_DATABASE` | Database creato automaticamente al primo avvio | `pi` | **Sì** |
+| `MARIADB_USER` | Utente applicativo MariaDB | `pi` | **Sì** |
+| `MARIADB_PASSWORD` | Password utente applicativo MariaDB | `REPLACE_WITH_SECURE_USER_PASSWORD` | **Sì** |
+| `MARIADB_ROOT_PASSWORD` | Password utente `root` MariaDB | `REPLACE_WITH_SECURE_ROOT_PASSWORD` | **Sì** |
 
 ---
 
@@ -210,6 +236,12 @@ podman stop pi && podman rm pi
 
 # Rebuild immagine
 podman-compose --env-file .env build pi
+
+# Ferma anche MariaDB senza cancellare il volume dati
+podman-compose --env-file .env stop mariadb
+
+# Elenca il volume persistente di MariaDB
+podman volume ls | grep mariadb-data
 ```
 
 ---
@@ -229,6 +261,9 @@ podman-compose --env-file .env build pi
 
 **I modelli non appaiono in models.json**
 - Esegui `podman-compose --env-file .env build pi` per forzare la rigenerazione
+
+**Devo ricreare MariaDB ma tenere i dati**
+- Usa `podman-compose --env-file .env up -d --force-recreate mariadb`: il volume su `/var/lib/mysql` verrà riutilizzato
 
 ---
 
