@@ -6,6 +6,20 @@ cd "$SCRIPT_DIR"
 
 source .env
 
+required_env_vars=(
+  MARIADB_DATABASE
+  MARIADB_USER
+  MARIADB_PASSWORD
+  MARIADB_ROOT_PASSWORD
+)
+
+for required_env_var in "${required_env_vars[@]}"; do
+  if [[ -z "${!required_env_var:-}" ]]; then
+    echo "❌ Errore: definisci ${required_env_var} nel file .env prima di avviare il container."
+    exit 1
+  fi
+done
+
 if command -v podman-compose >/dev/null 2>&1; then
   compose() {
     podman-compose --env-file .env -f podman-compose.yml "$@"
@@ -15,7 +29,7 @@ elif podman compose version >/dev/null 2>&1; then
     podman compose --env-file .env -f podman-compose.yml "$@"
   }
 else
-  echo "❌ Errore: installa podman-compose oppure usa una versione di Podman con 'podman compose'."
+  echo "❌ Errore: installa podman-compose (pip install podman-compose) oppure usa una versione recente di Podman con 'podman compose'."
   exit 1
 fi
 
@@ -29,7 +43,6 @@ if [[ -z "${PIPODMAN_WORKSPACE_PATH:-}" ]]; then
   echo "❌ Errore: passa un percorso di workspace come argomento o definisci PIPODMAN_WORKSPACE_PATH nel file .env."
   exit 1
 fi
-
 
 # Verifica che la cartella esista
 if [[ ! -d "$PIPODMAN_WORKSPACE_PATH" ]]; then
