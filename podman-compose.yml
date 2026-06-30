@@ -25,8 +25,7 @@ services:
       # Persiste le estensioni personalizzate tra le sessioni
       - ${PI_CUSTOM_EXTENSIONS_PATH:-~/.pi/custom_extensions}:/root/.pi/custom_extensions:Z
     depends_on:
-      mariadb:
-        condition: service_healthy
+      - mariadb
     working_dir: /workspace
     stdin_open: true
     tty: true
@@ -61,6 +60,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 15s
     expose:
       - "3306"
