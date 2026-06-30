@@ -8,7 +8,7 @@ source .env
 
 if command -v podman-compose >/dev/null 2>&1; then
   compose() {
-    podman-compose --env-file .env "$@"
+    podman-compose --env-file .env -f podman-compose.yml "$@"
   }
 elif podman compose version >/dev/null 2>&1; then
   compose() {
